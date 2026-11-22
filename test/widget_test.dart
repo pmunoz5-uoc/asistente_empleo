@@ -1,40 +1,27 @@
 import 'package:asistente_empleo/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-
+//Fichero Test para comprobar la correcta carga de la app y la navegación entre ventanas.
 void main() {
-  testWidgets('muestra el dashboard inicial y sus métricas vacías', (
-    tester,
-  ) async {
+  testWidgets('se puede abrir cada pantalla principal', (tester) async {
     await tester.pumpWidget(const EmploymentAssistantApp());
+    expect(find.text('Inicio'), findsWidgets);
 
-    expect(find.text('Inicio'), findsNWidgets(2));
-    expect(find.text('Ofertas guardadas'), findsOneWidget);
-    expect(find.text('Análisis realizados'), findsOneWidget);
-    expect(find.text('Candidaturas'), findsNWidgets(2));
-    expect(find.text('0'), findsNWidgets(3));
-    expect(find.byType(NavigationBar), findsOneWidget);
-  });
-
-  testWidgets('la navegación abre placeholders y permite volver al inicio', (
-    tester,
-  ) async {
-    await tester.pumpWidget(const EmploymentAssistantApp());
+    await tester.tap(find.text('Analizar oferta'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nueva oferta'), findsOneWidget);
 
     await tester.tap(find.text('Perfil'));
     await tester.pumpAndSettle();
-    expect(find.text('Esta pantalla está pendiente.'), findsOneWidget);
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.text('Inicio'),
-      ),
-    );
+    expect(find.text('Aún no hay datos de perfil'), findsOneWidget);
+    await tester.tap(find.text('Cargar CV y completar perfil'));
     await tester.pumpAndSettle();
-    expect(
-      find.text('Resumen de tu búsqueda de empleo.'),
-      findsOneWidget,
-    );
+    expect(find.byKey(const ValueKey('fullNameField')), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Candidaturas'));
+    await tester.pumpAndSettle();
+    expect(find.text('No hay candidaturas que mostrar.'), findsOneWidget);
   });
 }

@@ -1,9 +1,15 @@
 import 'package:material_ui/material_ui.dart';
+
+import 'screens/applications_screen.dart';
+import 'screens/application_analysis_screen.dart';
+import 'screens/profile_overview_screen.dart';
+
 //Pagina principal de la aplicación, desde aquí se visualiza el dashboard y se incluye la barra de navegación inferior.
 void main() {
   runApp(const EmploymentAssistantApp());
 }
-//Widget principal de la aplicación 
+
+//Widget principal de la aplicación
 class EmploymentAssistantApp extends StatelessWidget {
   const EmploymentAssistantApp({super.key});
 
@@ -11,14 +17,12 @@ class EmploymentAssistantApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Asistente de empleo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-        useMaterial3: true,
-      ),
+      theme: ThemeData(useMaterial3: true),
       home: const DashboardScreen(),
     );
   }
 }
+
 //Pantalla principal de la aplicación.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -26,6 +30,7 @@ class DashboardScreen extends StatefulWidget {
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
+
 //Control entre las diferentes ventanas
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
@@ -34,9 +39,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final pages = [
       const _HomeDashboard(),
-      const _PlaceholderPage(title: 'Perfil'),
-      const _PlaceholderPage(title: 'Analizar oferta'),
-      const _PlaceholderPage(title: 'Candidaturas'),
+      const ProfileOverviewScreen(),
+      const ApplicationAnalysisScreen(),
+      const ApplicationsScreen(),
     ];
 
     return Scaffold(
@@ -53,14 +58,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Inicio',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
+            icon: Icon(Icons.person_outline, key: ValueKey('profileTab')),
             selectedIcon: Icon(Icons.person),
             label: 'Perfil',
           ),
           NavigationDestination(
-            icon: Icon(Icons.work_outline),
-            selectedIcon: Icon(Icons.work),
-            label: 'Oferta',
+            icon: Icon(Icons.work_outline, key: ValueKey('newOfferButton')),
+            selectedIcon: Icon(Icons.work, key: ValueKey('newOfferButton')),
+            label: 'Analizar oferta',
           ),
           NavigationDestination(
             icon: Icon(Icons.assignment_outlined),
@@ -72,6 +77,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
 //Ventana Dashboard donde se muestran las estadisticas.
 class _HomeDashboard extends StatelessWidget {
   const _HomeDashboard();
@@ -109,6 +115,7 @@ class _HomeDashboard extends StatelessWidget {
     );
   }
 }
+
 //Widget para usarlo en cada estadística.
 class _MetricCard extends StatelessWidget {
   const _MetricCard({
@@ -135,20 +142,6 @@ class _MetricCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-//Pantalla para las ventanas que aún no están desarrolladas.
-class _PlaceholderPage extends StatelessWidget {
-  const _PlaceholderPage({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: const Center(child: Text('Esta pantalla está pendiente.')),
     );
   }
 }

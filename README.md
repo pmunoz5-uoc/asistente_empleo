@@ -1,11 +1,11 @@
 # Asistente de empleo
+Aplicación asistente de búsqueda de empleo.
 
-Incluye el dashboard con métricas iniciales a cero y navegación inferior.
+Funcionalidades:
+Carga de CV.
+Gestor de candidaturas.
+Análisis de ofertas con IA, con generación de CV adaptado y carta de presentación.
 
-PDT Integración con IA
-PDT Ventana de analisis de candidatura
-PDT Dashboard funcional
-PDT Ventana Perfil
 
 ## Ejecutar
 flutter pub get

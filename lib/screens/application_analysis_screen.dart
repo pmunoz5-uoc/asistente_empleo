@@ -1,8 +1,93 @@
 import 'package:material_ui/material_ui.dart';
 
-//Pant
-class ApplicationAnalysisScreen extends StatelessWidget {
-  const ApplicationAnalysisScreen({super.key});
+import '../features/applications/application_repository.dart';
+import '../features/applications/application_status.dart';
+import '../features/applications/job_application.dart';
+
+//Pantalla para registrar ofertas y guardarlas como candidaturas.
+class ApplicationAnalysisScreen extends StatefulWidget {
+  const ApplicationAnalysisScreen({required this.repository, super.key});
+
+  final ApplicationRepository repository;
+
+  @override
+  State<ApplicationAnalysisScreen> createState() =>
+      _ApplicationAnalysisScreenState();
+}
+
+class _ApplicationAnalysisScreenState extends State<ApplicationAnalysisScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _companyController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _urlController = TextEditingController();
+  final _contactController = TextEditingController();
+  final _notesController = TextEditingController();
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _companyController.dispose();
+    _descriptionController.dispose();
+    _urlController.dispose();
+    _contactController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveApplication() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSaving = true);
+    final now = DateTime.now();
+    try {
+      await widget.repository.save(
+        JobApplication(
+          id: 0,
+          title: _titleController.text.trim(),
+          company: _companyController.text.trim(),
+          offerDescription: _descriptionController.text.trim(),
+          offerUrl: _urlController.text.trim(),
+          contact: _contactController.text.trim(),
+          notes: _notesController.text.trim(),
+          status: ApplicationStatus.saved,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Candidatura guardada.',
+          ),
+        ),
+      );
+      _formKey.currentState!.reset();
+      for (final controller in [
+        _titleController,
+        _companyController,
+        _descriptionController,
+        _urlController,
+        _contactController,
+        _notesController,
+      ]) {
+        controller.clear();
+      }
+    } on ApplicationStorageException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  String? _requiredValue(String? value, String label) {
+    if (value == null || value.trim().isEmpty) return 'Introduce $label.';
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,6 +95,7 @@ class ApplicationAnalysisScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Nueva oferta')),
       body: SafeArea(
         child: Form(
+          key: _formKey,
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -51,22 +137,27 @@ class ApplicationAnalysisScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 TextFormField(
                   key: const ValueKey('offerTitleField'),
+                  controller: _titleController,
                   decoration: const InputDecoration(
                     labelText: 'Puesto',
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) => _requiredValue(value, 'el puesto'),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   key: const ValueKey('offerCompanyField'),
+                  controller: _companyController,
                   decoration: const InputDecoration(
                     labelText: 'Empresa',
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) => _requiredValue(value, 'la empresa'),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   key: const ValueKey('offerDescriptionField'),
+                  controller: _descriptionController,
                   decoration: const InputDecoration(
                     labelText: 'Descripción de la oferta',
                     hintText: 'Pega aquí el texto de la oferta.',
@@ -75,9 +166,12 @@ class ApplicationAnalysisScreen extends StatelessWidget {
                   ),
                   minLines: 8,
                   maxLines: 12,
+                  validator: (value) =>
+                      _requiredValue(value, 'la descripción de la oferta'),
                 ),
                 const SizedBox(height: 24),
                 TextFormField(
+                  controller: _urlController,
                   decoration: const InputDecoration(
                     labelText: 'Enlace de la oferta (opcional)',
                     border: OutlineInputBorder(),
@@ -86,6 +180,7 @@ class ApplicationAnalysisScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  controller: _contactController,
                   decoration: const InputDecoration(
                     labelText: 'Contacto o reclutador (opcional)',
                     border: OutlineInputBorder(),
@@ -93,6 +188,7 @@ class ApplicationAnalysisScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  controller: _notesController,
                   decoration: const InputDecoration(
                     labelText: 'Notas personales',
                     border: OutlineInputBorder(),
@@ -102,9 +198,15 @@ class ApplicationAnalysisScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.auto_awesome_outlined),
-                  label: const Text('Analizar oferta con IA'),
+                  onPressed: _isSaving ? null : _saveApplication,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save_outlined),
+                  label: Text(_isSaving ? 'Guardando…' : 'Guardar candidatura'),
                 ),
               ],
             ),
